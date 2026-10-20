@@ -451,5 +451,8 @@
   "Contains keyword": "Contém a palavra-chave",
   "Partial matches can include unrelated words.": "Correspondências parciais podem incluir palavras sem relação.",
   "We send the link only after a button tap and a confirmed follow. If verification fails, the link stays blocked.": "O link só é enviado após tocar no botão e confirmar que segue a conta. Se a verificação falhar, o link continua bloqueado.",
-  "Apply follow-check flow": "Aplicar fluxo de confirmação de seguidor"
+  "Apply follow-check flow": "Aplicar fluxo de confirmação de seguidor",
+  "Use your own Meta app without a paid connection provider. Meta app setup is required; hosting costs may apply.": "Conecte com seu próprio app da Meta, sem um provedor de conexão pago. É necessário configurar o app da Meta; a hospedagem pode ter custos.",
+  "Set up Meta app": "Configurar app da Meta",
+  "Other connection option (paid): Zernio": "Outra opção de conexão (paga): Zernio"
 }

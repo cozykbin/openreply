@@ -451,5 +451,8 @@
   "Contains keyword": "포함 일치 (정보요, 정보주세요도 포함)",
   "Partial matches can include unrelated words.": "포함 일치는 개인정보처럼 원하지 않는 단어도 포함할 수 있습니다.",
   "We send the link only after a button tap and a confirmed follow. If verification fails, the link stays blocked.": "버튼을 누르고 팔로우가 확인된 경우에만 링크를 보냅니다. 확인에 실패하면 링크를 보내지 않고 재확인을 안내합니다.",
-  "Apply follow-check flow": "팔로우 확인 흐름 적용"
+  "Apply follow-check flow": "팔로우 확인 흐름 적용",
+  "Use your own Meta app without a paid connection provider. Meta app setup is required; hosting costs may apply.": "유료 연결 서비스 없이 내 Meta 앱으로 연결합니다. Meta 앱 설정이 필요하며, 서버 운영 비용은 별도입니다.",
+  "Set up Meta app": "Meta 앱 설정하기",
+  "Other connection option (paid): Zernio": "다른 연결 방식 (유료): Zernio"
 }

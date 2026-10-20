@@ -141,16 +141,11 @@ export default function SettingsPage() {
         <InstagramConnectNotice />
       </Suspense>
 
-      <section className="panel rounded p-4 sm:p-6 space-y-3">
-        <h2 className="text-base font-semibold">{t("Interface language")}</h2>
-        <LanguageSwitcher />
-        <p className="text-sm text-muted">{t("Saved in this browser. Campaign messages stay unchanged.")}</p>
-      </section>
-
-      <ZernioConnection canManage={canManageMembers} />
-
       <section className="panel rounded p-4 sm:p-6">
-        <h2 className="text-base font-semibold mb-6">{t("Instagram Connection")}</h2>
+        <h2 className="text-base font-semibold">{t("Instagram Connection")}</h2>
+        <p className="mt-2 text-sm leading-6 text-muted">
+          {t("Use your own Meta app without a paid connection provider. Meta app setup is required; hosting costs may apply.")}
+        </p>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3 py-3 border-b border-border">
@@ -220,7 +215,15 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="mt-6 pt-4 border-t border-border flex gap-3">
+        <div className="mt-6 pt-4 border-t border-border flex flex-wrap gap-3">
+          <a
+            href="https://developers.facebook.com/apps/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 rounded border border-border text-sm font-medium hover:border-border-hover"
+          >
+            {t("Set up Meta app")}
+          </a>
           <a
             href="/api/instagram/connect"
             className="px-4 py-2 rounded text-sm font-medium transition-colors bg-accent text-white hover:bg-accent-hover"
@@ -228,6 +231,21 @@ export default function SettingsPage() {
             {t("Connect using your own Meta app")}
           </a>
         </div>
+      </section>
+
+      <details className="panel rounded p-4 sm:p-6">
+        <summary className="cursor-pointer text-sm font-medium">
+          {t("Other connection option (paid): Zernio")}
+        </summary>
+        <div className="mt-4">
+          <ZernioConnection canManage={canManageMembers} />
+        </div>
+      </details>
+
+      <section className="panel rounded p-4 sm:p-6 space-y-3">
+        <h2 className="text-base font-semibold">{t("Interface language")}</h2>
+        <LanguageSwitcher />
+        <p className="text-sm text-muted">{t("Saved in this browser. Campaign messages stay unchanged.")}</p>
       </section>
 
       <section className="panel rounded p-4 sm:p-6">

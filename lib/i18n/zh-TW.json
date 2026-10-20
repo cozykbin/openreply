@@ -451,5 +451,8 @@
   "Contains keyword": "包含關鍵字",
   "Partial matches can include unrelated words.": "部分比對也可能符合無關詞語。",
   "We send the link only after a button tap and a confirmed follow. If verification fails, the link stays blocked.": "只有按下按鈕並確認追蹤後才會傳送連結；無法確認時不會傳送。",
-  "Apply follow-check flow": "套用追蹤確認流程"
+  "Apply follow-check flow": "套用追蹤確認流程",
+  "Use your own Meta app without a paid connection provider. Meta app setup is required; hosting costs may apply.": "使用自己的 Meta 應用程式連線，不需要付費連線服務。必須先設定 Meta 應用程式，伺服器費用另計。",
+  "Set up Meta app": "設定 Meta 應用程式",
+  "Other connection option (paid): Zernio": "其他連線方式（付費）：Zernio"
 }
