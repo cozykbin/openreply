@@ -43,7 +43,7 @@ npm run db:migrate
 2. Meta 개발자 앱에서 Instagram API with Instagram Login을 설정합니다.
 3. 앱의 Instagram ID·시크릿과 Facebook 앱 시크릿을 각각 `INSTAGRAM_APP_ID`, `INSTAGRAM_APP_SECRET`, `FACEBOOK_APP_SECRET`에 입력합니다. 두 시크릿이 같은 값이라고 가정하지 마세요.
 4. 서버를 공개 HTTPS 주소로 준비하고 `NEXTAUTH_URL`을 그 주소로 변경합니다. Meta 리디렉션 URI에는 `https://내주소/api/instagram/callback`을 등록합니다.
-5. Webhook 콜백 `https://내주소/api/webhook`과 `.env`의 `WEBHOOK_VERIFY_TOKEN`을 등록합니다. 댓글 기능에는 `comments`, DM·버튼 상호작용에는 `messages`와 원본 안내의 관련 필드 구독이 필요합니다.
+5. Webhook 콜백 `https://내주소/api/webhook`과 `.env`의 `WEBHOOK_VERIFY_TOKEN`을 등록합니다. Meta 앱에서 `comments`, `messages`, `messaging_postbacks`, `messaging_seen`을 구독합니다. 특히 팔로우 확인 버튼 클릭은 `messaging_postbacks`가 필요하며 `messages`만으로는 받을 수 없습니다. 연결할 때 각 Instagram 계정에도 이 네 필드를 자동 구독합니다. 기존 연결은 Meta 앱의 필드 설정을 완료한 뒤 다시 연결하세요. [Meta 필드·권한 문서](https://developers.facebook.com/documentation/instagram-platform/webhooks/fields)를 기준으로 확인합니다.
 6. `/settings`에서 **내 Meta 앱으로 연결**을 선택해 계정을 연결합니다. 앱이 요청하는 권한은 `lib/meta/oauth.ts`에서 확인할 수 있습니다.
 
 테스트 계정·앱 역할·표준 접근 권한에서 성공한 것과 일반 사용자의 댓글에 운영할 수 있는 것은 다를 수 있습니다. 사용할 계정과 각 권한의 접근 수준, 앱 공개·검수 조건을 Meta 대시보드에서 확인하고 일반 사용자 계정의 댓글로 검증하세요. 코드 수정만으로 Meta 권한을 대신할 수 없습니다.

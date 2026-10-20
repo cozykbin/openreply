@@ -825,7 +825,14 @@ export async function subscribeInstagramAccountToWebhooks(
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({
-        subscribed_fields: ["comments", "messages"],
+        // Button taps and read receipts have their own subscriptions; the
+        // messages field alone does not deliver those events.
+        subscribed_fields: [
+          "comments",
+          "messages",
+          "messaging_postbacks",
+          "messaging_seen",
+        ],
       }),
     }
   );
