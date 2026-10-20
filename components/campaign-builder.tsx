@@ -20,6 +20,7 @@ import PostPicker from "@/components/post-picker";
 import CampaignPreview, { type PreviewTab } from "@/components/campaign-preview";
 import { readCache, writeCache } from "@/lib/client-cache";
 import type { CampaignTemplate } from "@/lib/templates/campaign-templates";
+import { FOLLOW_GATE_DEFAULTS } from "@/lib/follow-gate";
 import {
   IMPORT_QUEUE_KEY,
   IMPORT_ACCOUNT_KEY,
@@ -168,21 +169,21 @@ export default function CampaignBuilder({ mode, campaignId, initialTemplate }: C
   const [publicReplyEnabled, setPublicReplyEnabled] = useState(false);
   const [publicReplyMessages, setPublicReplyMessages] = useState<string[]>([""]);
 
-  const [openingDmEnabled, setOpeningDmEnabled] = useState(false);
-  const [openingDmMessage, setOpeningDmMessage] = useState("");
-  const [openingDmButtonLabel, setOpeningDmButtonLabel] = useState("");
+  const [openingDmEnabled, setOpeningDmEnabled] = useState(initialTemplate?.followGate?.openingDmEnabled ?? false);
+  const [openingDmMessage, setOpeningDmMessage] = useState(initialTemplate?.followGate?.openingDmMessage ?? "");
+  const [openingDmButtonLabel, setOpeningDmButtonLabel] = useState<string>(initialTemplate?.followGate?.openingDmButtonLabel ?? "");
 
   const [dmMessage, setDmMessage] = useState(initialTemplate?.dmMessage ?? "");
-  const [linkOpen, setLinkOpen] = useState(false);
-  const [trackedDestinationUrl, setTrackedDestinationUrl] = useState("");
-  const [linkButtonLabel, setLinkButtonLabel] = useState("Open link");
+  const [linkOpen, setLinkOpen] = useState(Boolean(initialTemplate?.followGate?.trackedDestinationUrl));
+  const [trackedDestinationUrl, setTrackedDestinationUrl] = useState(initialTemplate?.followGate?.trackedDestinationUrl ?? "");
+  const [linkButtonLabel, setLinkButtonLabel] = useState<string>(initialTemplate?.followGate?.linkButtonLabel ?? "Open link");
   const [secondLinkOpen, setSecondLinkOpen] = useState(false);
   const [secondaryDestinationUrl, setSecondaryDestinationUrl] = useState("");
   const [secondaryButtonLabel, setSecondaryButtonLabel] = useState("Open link");
-  const [requireFollow, setRequireFollow] = useState(false);
-  const [followPromptMessage, setFollowPromptMessage] = useState("");
+  const [requireFollow, setRequireFollow] = useState(initialTemplate?.followGate?.requireFollow ?? false);
+  const [followPromptMessage, setFollowPromptMessage] = useState<string>(initialTemplate?.followGate?.followPromptMessage ?? "");
   const [followPromptButtonLabel, setFollowPromptButtonLabel] =
-    useState("i'm following");
+    useState<string>(initialTemplate?.followGate?.followPromptButtonLabel ?? FOLLOW_GATE_DEFAULTS.followPromptButtonLabel);
   const [followUpEnabled, setFollowUpEnabled] = useState(false);
   const [followUpMessage, setFollowUpMessage] = useState("");
   const [followUpDelayMinutes, setFollowUpDelayMinutes] = useState(0);
@@ -816,6 +817,17 @@ export default function CampaignBuilder({ mode, campaignId, initialTemplate }: C
         </Section>
 
         <Section title={t("They will get")}>
+          <button type="button" className="w-full rounded-lg border border-accent px-3 py-2.5 text-sm font-medium text-accent"
+            onClick={() => {
+              setOpeningDmEnabled(true);
+              setOpeningDmMessage(FOLLOW_GATE_DEFAULTS.openingDmMessage);
+              setOpeningDmButtonLabel(FOLLOW_GATE_DEFAULTS.openingDmButtonLabel);
+              setRequireFollow(true);
+              setFollowPromptMessage(FOLLOW_GATE_DEFAULTS.followPromptMessage);
+              setFollowPromptButtonLabel(FOLLOW_GATE_DEFAULTS.followPromptButtonLabel);
+              setLinkButtonLabel(FOLLOW_GATE_DEFAULTS.linkButtonLabel);
+              setLinkOpen(true);
+            }}>{t("Apply follow-check flow")}</button>
           <div className="rounded-lg border border-border p-3">
             <div className="flex items-center justify-between">
               <span className="text-sm text-foreground">{t("an opening DM")}</span>
@@ -872,7 +884,7 @@ export default function CampaignBuilder({ mode, campaignId, initialTemplate }: C
                   maxLength={20}
                 />
                 <p className="text-xs text-muted">
-                  {t("We send the link only after they tap the button and Instagram confirms the follow. If it can't be verified, we send it anyway.")}
+                  {t("We send the link only after a button tap and a confirmed follow. If verification fails, the link stays blocked.")}
                 </p>
               </div>
             )}

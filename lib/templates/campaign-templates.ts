@@ -1,3 +1,5 @@
+import { FOLLOW_GATE_DEFAULTS } from "@/lib/follow-gate";
+
 export interface CampaignTemplate {
   slug: string;
   title: string;
@@ -15,22 +17,24 @@ export interface CampaignTemplate {
   playbook: string[];
   metrics: string[];
   accent: "cyan" | "emerald" | "rose" | "amber";
+  followGate?: typeof FOLLOW_GATE_DEFAULTS & { trackedDestinationUrl: string };
 }
 
 export const CAMPAIGN_TEMPLATES: CampaignTemplate[] = [
   {
     slug: "ko-resource-link",
-    title: "자료 링크 보내기",
+    title: "팔로우 확인 후 자료 공유",
     category: "자료 공유",
     audience: "정보를 공유하는 크리에이터",
-    summary: "정보, 자료, 링크 댓글에 가이드나 다운로드 링크를 DM으로 보냅니다.",
+    summary: "댓글에 확인 버튼을 보내고, 팔로우를 확인한 뒤에만 자료 링크를 전달합니다.",
     goal: "요청한 자료 전달",
     keywords: ["정보", "자료", "링크"],
-    dmMessage: "{username}님, 요청하신 자료 보내드려요! https://example.com/guide",
+    dmMessage: "{username}님, 요청하신 자료 공유드립니다 💌 {link}",
+    followGate: { ...FOLLOW_GATE_DEFAULTS, trackedDestinationUrl: "https://example.com/guide" },
     triggerExample: "정보 주세요!",
     privateReplyPreview: "하늘님, 요청하신 자료 보내드려요! example.com/guide",
     setupMinutes: 3,
-    outcome: "댓글에서 요청한 자료를 바로 전달합니다.",
+    outcome: "팔로우 확인을 마친 사람에게 요청한 자료를 전달합니다.",
     bestFor: ["무료 가이드", "체크리스트", "앱·서비스 소개"],
     playbook: ["자료를 소개하는 게시물이나 릴스를 선택하세요.", "댓글에 남길 키워드를 안내하세요.", "예시 URL을 실제 자료 링크로 바꾸세요.", "다른 계정으로 댓글을 남기고 발송 기록을 확인하세요."],
     metrics: ["발송한 DM", "자료 링크 클릭", "실패한 발송"],

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const features = [
-  ["01", "키워드는 우리말로", "정보, 자료, 신청. 익숙한 키워드로 시작하고, 붙여 쓰는 댓글까지 받을지 직접 정하세요."],
+  ["01", "댓글 다음은 팔로우 확인", "첫 DM에 확인 버튼을 보내고, 팔로우 여부가 확인된 사람에게 자료 링크를 전달하세요."],
   ["02", "보낼 내용도 우리 방식으로", "자료 공유, 상품 안내, 행사 신청 템플릿을 골라 메시지와 링크를 바꾸면 됩니다."],
   ["03", "발송 흐름은 한눈에", "원본 OpenReply의 대기열, 중복 방지, 재시도와 발송 기록으로 자동화를 운영하세요."],
 ];
@@ -30,8 +30,8 @@ export default function HomePage() {
         <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[1.1fr_1fr]">
           <div>
             <p className="text-sm font-semibold text-accent">직접 운영하는 Instagram 댓글 자동 DM</p>
-            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">댓글을 남기면,<br />링크가 DM으로.</h1>
-            <p className="mt-6 max-w-lg text-base leading-8 text-muted">반복해서 보내던 링크, 이제 자동으로 보내세요. 한국어 화면에서 키워드와 메시지를 정하고 내 서버에서 운영하는 OpenReply입니다.</p>
+            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">댓글을 남기면,<br />팔로우 확인부터.</h1>
+            <p className="mt-6 max-w-lg text-base leading-8 text-muted">댓글 → 팔로우 확인 → 자료 링크. 확인되지 않으면 다시 안내하고, 확인되면 링크 버튼을 보내세요. 한국어 화면에서 내 서버로 운영하는 OpenReply입니다.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/playground" className="rounded-xl bg-accent px-6 py-3.5 text-sm font-semibold text-white hover:bg-accent-hover">로그인 없이 체험하기 →</Link>
               <a href={SETUP_GUIDE_URL} className="rounded-xl border border-border px-6 py-3.5 text-sm font-semibold">한국어 설치 안내 ↗</a>
@@ -42,7 +42,8 @@ export default function HomePage() {
             <figcaption className="flex items-center justify-between border-b border-border pb-5 text-sm"><span className="font-semibold">자료 링크 보내기</span><span className="text-xs text-muted">작동 예시</span></figcaption>
             <div className="mt-6 rounded-xl border border-border bg-white p-5"><p className="text-xs text-muted">게시물 안내</p><p className="mt-2 text-xl font-semibold leading-8">댓글에 ‘정보’를 남기면<br />자료 링크를 보내드려요.</p></div>
             <div className="mt-5 flex gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border text-xs">하늘</span><div><p className="text-xs font-semibold">@haneul</p><p className="mt-1 text-sm">정보 주세요!</p></div></div>
-            <p className="my-5 text-center text-xs font-semibold text-accent">↓ ‘정보’ 키워드 일치</p>
+            <p className="my-5 text-center text-xs font-semibold text-accent">↓ 키워드 일치 → 팔로우 확인</p>
+            <div className="mb-4 rounded-xl bg-zinc-100 p-4 text-sm leading-7">팔로우를 확인한 뒤 자료를 보내드려요.<div className="mt-2 rounded-lg bg-white px-4 py-2 text-center font-semibold">팔로우 확인 🙌</div></div>
             <div className="rounded-xl border border-orange-200 bg-orange-50 p-5"><p className="text-xs text-muted">DM 내용</p><p className="mt-2 text-sm leading-7">하늘님, 요청하신 자료 보내드려요!</p><p className="mt-2 text-sm font-medium text-orange-700">https://example.com/guide</p></div>
           </figure>
         </section>

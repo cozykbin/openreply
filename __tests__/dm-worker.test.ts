@@ -141,6 +141,8 @@ import { MetaApiError, RateLimitError } from "@/lib/meta/client";
 import { createDMWorker } from "../lib/queue/dm-worker";
 import { getRedisConnection } from "@/lib/queue/client";
 import { hashRecipientId } from "@/lib/tracking/server";
+import { FOLLOW_GATE_DEFAULTS, FOLLOW_STATUS_UNAVAILABLE_MESSAGE } from "@/lib/follow-gate";
+import { getCampaignTemplate } from "@/lib/templates/campaign-templates";
 
 const usagePeriodStart = new Date("2026-05-01T00:00:00.000Z");
 
@@ -818,7 +820,7 @@ describe("DM Worker — Full Pipeline", () => {
     expect(mockSendDirectMessageWithButton).not.toHaveBeenCalled();
   });
 
-  it("should deliver a follow-gated read fallback once the user follows", async () => {
+  it("requires a button tap even when a read fallback belongs to a confirmed follower", async () => {
     mockPrisma.automation.findMany.mockResolvedValue([]);
     mockPrisma.automation.findFirst.mockResolvedValue({
       ...mockAutomation,
@@ -837,12 +839,9 @@ describe("DM Worker — Full Pipeline", () => {
       })
     );
 
-    expect(mockSendDirectMessage).toHaveBeenCalledWith(
-      "decrypted_token",
-      "ig_456",
-      "commenter_999",
-      "Hey commenter_user! Here is the link: https://example.com"
-    );
+    expect(mockSendDirectMessage).not.toHaveBeenCalled();
+    expect(mockGetUserFollowStatus).not.toHaveBeenCalled();
+    expect(mockReserveWorkspaceDMSend).not.toHaveBeenCalled();
   });
 
   it("should not log a failure when a read fallback hits a closed messaging window", async () => {
@@ -1120,7 +1119,7 @@ describe("DM Worker — DM keyword trigger", () => {
       "ig_456",
       "commenter_999",
       expect.any(String),
-      "I'm following ✅",
+      FOLLOW_GATE_DEFAULTS.followPromptButtonLabel,
       "followcheck:auto_789"
     );
     expect(mockSendDirectMessage).not.toHaveBeenCalled();
@@ -1182,7 +1181,7 @@ describe("DM Worker — DM keyword trigger", () => {
 });
 
 describe("Zernio worker routing", () => {
-  it("fails open on unknown follow status and sends once through the selected provider", async () => {
+  it("keeps the link blocked on unknown follow status through the selected provider", async () => {
     mockPrisma.zernioConnection.findUnique.mockResolvedValue({
       apiKey: "encrypted_key",
     });
@@ -1222,6 +1221,9 @@ describe("Zernio worker routing", () => {
       expect(JSON.parse(fetchMock.mock.calls[1][1].body).accountId).toBe(
         "zernio_selected"
       );
+      const body = JSON.parse(fetchMock.mock.calls[1][1].body);
+      expect(body.buttons[0].payload).toBe("followcheck:auto_789");
+      expect(body.message).not.toContain("https://example.com");
       expect(mockSendPrivateReply).not.toHaveBeenCalled();
       expect(mockSendPrivateReplyWithButton).not.toHaveBeenCalled();
       expect(mockPrisma.dmLog.update).toHaveBeenCalledWith(
@@ -1763,4 +1765,55 @@ it("retains the public reply claim if sending succeeded but its log write failed
   await process({ ...createMockJob(), id: "next-poll" });
   expect(sendCommentReply).toHaveBeenCalledTimes(1);
   expect(mockSendPrivateReply).toHaveBeenCalledTimes(1);
+});
+
+
+describe("Korean follow-check resource flow", () => {
+  it("starts with a check button, re-prompts a non-follower, then sends the link only after verification", async () => {
+    const template = getCampaignTemplate("ko-resource-link")!;
+    const automation = {
+      ...mockAutomation, ...template.followGate, dmMessage: template.dmMessage,
+      trackedLinks: [{ slug: "resource", label: "🔗", destinationUrl: "https://example.com/guide" }],
+    };
+    mockPrisma.automation.findMany.mockResolvedValue([automation]);
+    mockPrisma.automation.findFirst.mockResolvedValue(automation);
+    const process = getProcessor();
+    await process(createMockJob());
+    expect(mockSendPrivateReplyWithButton).toHaveBeenCalledWith(
+      "decrypted_token", "ig_456", "comment_555", FOLLOW_GATE_DEFAULTS.openingDmMessage,
+      FOLLOW_GATE_DEFAULTS.openingDmButtonLabel, "followcheck:auto_789:open",
+    );
+    expect(mockGetUserFollowStatus).not.toHaveBeenCalled();
+    expect(mockSendPrivateReplyWithLinkButton).not.toHaveBeenCalled();
+
+    mockGetUserFollowStatus.mockResolvedValue(false);
+    await process(createMockPostbackJob({ instagramAccountId: "ig_456", userId: "commenter_999", payload: "followcheck:auto_789:open" }));
+    expect(mockSendDirectMessageWithButton).toHaveBeenCalledWith(
+      "decrypted_token", "ig_456", "commenter_999", FOLLOW_GATE_DEFAULTS.followPromptMessage,
+      FOLLOW_GATE_DEFAULTS.followPromptButtonLabel, "followcheck:auto_789",
+    );
+    expect(mockSendDirectMessageWithLinkButton).not.toHaveBeenCalled();
+
+    mockGetUserFollowStatus.mockResolvedValue(true);
+    await process({ ...createMockPostbackJob({ instagramAccountId: "ig_456", userId: "commenter_999", payload: "followcheck:auto_789" }), id: "follow-complete-tap" });
+    expect(mockSendDirectMessageWithLinkButton).toHaveBeenCalledWith(
+      "decrypted_token", "ig_456", "commenter_999", "commenter_user님, 요청하신 자료 공유드립니다 💌",
+      [{ title: "🔗", url: `http://localhost:3000/r/resource?r=${hashRecipientId("commenter_999")}` }],
+    );
+  });
+
+  it.each(["followcheck:auto_789:open", "followcheck:auto_789", "reveal:auto_789"])(
+    "does not reveal a link when follow status is unavailable for %s", async (payload) => {
+      mockPrisma.automation.findFirst.mockResolvedValue({ ...mockAutomation, requireFollow: true });
+      mockGetUserFollowStatus.mockResolvedValue(null);
+      await getProcessor()(createMockPostbackJob({ instagramAccountId: "ig_456", userId: "commenter_999", payload }));
+      expect(mockSendDirectMessageWithButton).toHaveBeenCalledWith(
+        "decrypted_token", "ig_456", "commenter_999", FOLLOW_STATUS_UNAVAILABLE_MESSAGE,
+        FOLLOW_GATE_DEFAULTS.followPromptButtonLabel, "followcheck:auto_789",
+      );
+      expect(mockSendDirectMessage).not.toHaveBeenCalled();
+      expect(mockSendDirectMessageWithLinkButton).not.toHaveBeenCalled();
+      expect(mockReserveWorkspaceDMSend).not.toHaveBeenCalled();
+    },
+  );
 });

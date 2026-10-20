@@ -17,8 +17,8 @@ export default function PlaygroundPage() {
       </nav>
       <header className="mb-9 mt-12 max-w-2xl">
         <p className="text-sm font-medium text-accent">로그인 없이 체험</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">댓글 하나, DM 하나.</h1>
-        <p className="mt-4 text-base leading-8 text-muted">키워드를 정하고 댓글을 남겨 보세요. 실제 자동화와 같은 판정 방식으로 보낼 메시지를 확인할 수 있습니다.</p>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">팔로우 확인 후, 자료를 DM으로.</h1>
+        <p className="mt-4 text-base leading-8 text-muted">댓글 → 팔로우 확인 버튼 → 미팔로우 시 재확인 → 확인되면 링크 전달. 실제 대화처럼 버튼을 눌러 전체 흐름을 체험해 보세요.</p>
       </header>
       <CommentSimulator />
     </main>
