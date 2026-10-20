@@ -446,5 +446,9 @@
   "{name} Campaign Report": "Relatório da campanha {name}",
   "{type} post": "Publicação {type}",
   "”": "”",
-  "← Campaigns": "← Campanhas"
+  "← Campaigns": "← Campanhas",
+  "Match method": "Modo de correspondência",
+  "Whole words only": "Apenas palavras inteiras",
+  "Contains keyword": "Contém a palavra-chave",
+  "Partial matches can include unrelated words.": "Correspondências parciais podem incluir palavras sem relação."
 }

@@ -26,9 +26,20 @@ describe("language preference", () => {
     expect(t("Settings")).toBe("Configurações");
   });
 
-  it("falls back to English for an invalid cookie", async () => {
+  it("falls back to Korean for an invalid cookie", async () => {
     store.get.mockReturnValue({ value: "unsupported" });
-    expect((await getI18n()).locale).toBe("en");
+    expect((await getI18n()).locale).toBe("ko");
+  });
+
+  it("renders Korean without a cookie and persists an explicit Korean preference", async () => {
+    store.get.mockReturnValue(undefined);
+    expect((await getI18n()).t("Settings")).toBe("설정");
+    await setLocale("ko");
+    expect(store.set).toHaveBeenCalledWith(
+      LOCALE_COOKIE,
+      "ko",
+      expect.objectContaining({ httpOnly: true, path: "/" }),
+    );
   });
 
   it("persists only the language cookie, across routes and browser restarts", async () => {

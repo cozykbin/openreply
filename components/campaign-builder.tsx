@@ -19,6 +19,7 @@ import AccountSelect, { type AccountOption } from "@/components/account-select";
 import PostPicker from "@/components/post-picker";
 import CampaignPreview, { type PreviewTab } from "@/components/campaign-preview";
 import { readCache, writeCache } from "@/lib/client-cache";
+import type { CampaignTemplate } from "@/lib/templates/campaign-templates";
 import {
   IMPORT_QUEUE_KEY,
   IMPORT_ACCOUNT_KEY,
@@ -37,6 +38,7 @@ interface LoadedCampaign {
   matchAnyPost: boolean;
   keywords: string[];
   matchAnyWord: boolean;
+  wholeWordMatch: boolean;
   dmTriggerEnabled: boolean;
   dmMessage: string;
   openingDmEnabled: boolean;
@@ -60,6 +62,7 @@ interface LoadedCampaign {
 interface CampaignBuilderProps {
   mode: "new" | "edit";
   campaignId?: string;
+  initialTemplate?: CampaignTemplate | null;
 }
 
 function Section({
@@ -130,7 +133,7 @@ function Toggle({
   );
 }
 
-export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderProps) {
+export default function CampaignBuilder({ mode, campaignId, initialTemplate }: CampaignBuilderProps) {
   const { t } = useI18n();
   const router = useRouter();
 
@@ -139,7 +142,7 @@ export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderPro
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [name, setName] = useState("");
+  const [name, setName] = useState(initialTemplate?.title ?? "");
   const [accounts, setAccounts] = useState<AccountOption[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState("");
 
@@ -158,7 +161,8 @@ export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderPro
   const [usedPosts, setUsedPosts] = useState<Record<string, string>>({});
 
   const [matchMode, setMatchMode] = useState<MatchMode>("specific");
-  const [keywordText, setKeywordText] = useState("");
+  const [keywordText, setKeywordText] = useState(initialTemplate?.keywords.join(", ") ?? "");
+  const [wholeWordMatch, setWholeWordMatch] = useState(true);
   const [dmTriggerEnabled, setDmTriggerEnabled] = useState(false);
 
   const [publicReplyEnabled, setPublicReplyEnabled] = useState(false);
@@ -168,7 +172,7 @@ export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderPro
   const [openingDmMessage, setOpeningDmMessage] = useState("");
   const [openingDmButtonLabel, setOpeningDmButtonLabel] = useState("");
 
-  const [dmMessage, setDmMessage] = useState("");
+  const [dmMessage, setDmMessage] = useState(initialTemplate?.dmMessage ?? "");
   const [linkOpen, setLinkOpen] = useState(false);
   const [trackedDestinationUrl, setTrackedDestinationUrl] = useState("");
   const [linkButtonLabel, setLinkButtonLabel] = useState("Open link");
@@ -260,6 +264,7 @@ export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderPro
         setPostUrl(c.postUrl);
         setMatchMode(c.matchAnyWord ? "any" : "specific");
         setKeywordText(c.keywords.join(", "));
+        setWholeWordMatch(c.wholeWordMatch ?? true);
         setDmTriggerEnabled(c.dmTriggerEnabled ?? false);
         setPublicReplyEnabled(c.publicReplyEnabled);
         setPublicReplyMessages(
@@ -330,6 +335,7 @@ export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderPro
     setPostThumb(null);
     setPostCaption("");
     setMatchMode("specific");
+    setWholeWordMatch(true);
     setKeywordText((row.keywords ?? []).join(", "));
     setDmMessage(row.dmMessage ?? "");
     setPublicReplyEnabled(Boolean(row.publicReply));
@@ -408,6 +414,7 @@ export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderPro
       pendingNextReel: triggerScope === "next",
       matchAnyWord: matchMode === "any",
       keywords: matchMode === "any" ? [] : keywords,
+      wholeWordMatch,
       dmTriggerEnabled,
       dmMessage,
       openingDmEnabled,
@@ -715,6 +722,16 @@ export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderPro
                 className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-zinc-500 focus:border-accent/40 focus:outline-none"
               />
               <p className="text-xs text-muted">{t("Use commas to separate words")}</p>
+              <label className="block pt-2 text-xs font-medium text-foreground">
+                {t("Match method")}
+                <select value={wholeWordMatch ? "whole" : "partial"}
+                  onChange={(event) => setWholeWordMatch(event.target.value === "whole")}
+                  className="mt-1 block w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm">
+                  <option value="whole">{t("Whole words only")}</option>
+                  <option value="partial">{t("Contains keyword")}</option>
+                </select>
+              </label>
+              {!wholeWordMatch && <p className="text-xs text-muted">{t("Partial matches can include unrelated words.")}</p>}
             </div>
           )}
           <Radio

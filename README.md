@@ -1,143 +1,61 @@
-<div align="center">
+# OpenReply 한국어판
 
-# OpenReply
+Instagram 댓글에 키워드를 남기면 링크를 DM으로 보내는, 직접 운영하는 오픈소스 도구입니다.
+[diwenne/openreply](https://github.com/diwenne/openreply)를 기반으로 만든 한국어 포크입니다.
 
-Open-sourced ManyChat for Instagram comment-to-DM automation.
+## 우리 버전에서 바뀐 점
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/diwenne/openreply?style=flat&color=black)](https://github.com/diwenne/openreply/stargazers)
-[![Built with Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org)
+- 한국어를 기본 화면 언어로 제공합니다. 로그인, 자동화 편집, 수신함, 발송 기록, 설정과 보고서를 번역했습니다. 영어·번체 중국어·브라질 포르투갈어도 선택할 수 있습니다.
+- 한국어 첫 화면과 **로그인 없는 체험 화면 `/playground`**을 추가했습니다. 체험 화면은 실제 발송 엔진의 키워드 판정을 사용하며, DM을 발송하거나 설정을 저장하지 않습니다.
+- 자료 링크, 상품 정보, 행사 신청용 한국어 템플릿 3개를 추가했습니다. 템플릿 선택 후 로그인하면 새 자동화에 이름·키워드·메시지가 채워집니다.
+- 자동화 편집기에 **단어 일치 / 포함 일치** 선택을 추가했습니다. `정보주세요`처럼 붙여 쓰는 댓글은 포함 일치를 선택하세요. 포함 일치는 `개인정보`처럼 원하지 않는 단어에도 반응할 수 있습니다.
 
-</div>
+## 실행
 
-Someone comments `LINK` on your reel, and OpenReply queues a DM with your link. That is the whole idea. OpenReply watches the comments on your Instagram posts, and when a comment matches a keyword you set, it sends that person a private reply through the official Meta API. You can also post a public reply under the comment at the same time.
+Node.js 22.12 이상(또는 24 LTS), PostgreSQL, Redis가 필요합니다.
 
-OpenReply is free, MIT-licensed software running on your own infrastructure, with no software seat limits or plan caps. Hosting and optional provider costs are separate.
-
-> **Supported by [Zernio](https://zernio.com/?utm_source=openreply&utm_medium=sponsorship&utm_campaign=openreply-integration&utm_content=readme-sponsor).** An optional paid Instagram connection provider that lets you avoid creating and reviewing your own Meta app. OpenReply still runs your campaigns, queues, logs, and inbox on your infrastructure. [Connect with Zernio](docs/zernio.md), or keep using your own Meta app.
-
-> **OpenReply is self-hosted. You have to deploy your own copy.**
->
-> [openreply.diwen.dev](https://openreply.diwen.dev) is a demo of the dashboard, not a service you can sign up for. Creating an account there will never send a DM for you, and there is no hosted plan to upgrade to.
->
-> A working instance needs your deployed fork, a public HTTPS URL, PostgreSQL, Redis, a running worker, and an Instagram connection. Choose optional paid Zernio or your own Meta app. [docs/setup.md](docs/setup.md) walks through all of it.
-
-> If this saves you a subscription or a weekend of building, a star on the repo genuinely helps other people find it.
-
-## Why this exists
-
-Comment-to-DM is one feature, but every tool that offers it wants a recurring subscription for it. OpenReply makes that workflow available as software you can inspect, modify, and host yourself.
-
-OpenReply is built around Meta's official Instagram private replies. It does not scrape, it does not automate a browser, and it never asks for an Instagram password. Instagram’s policies, permissions, messaging windows, and rate limits still apply.
-
-## Features
-
-- Keyword to DM. Match one or many keywords per post, whole-word or partial.
-- Optional public reply. Post a visible comment reply on top of the DM.
-- DM and Story reply triggers. The same keywords can also fire on an inbound DM, which covers text replies to your Stories, since Instagram delivers those as DMs. That makes `Reply LINK to this Story` work with no post involved. Turn it on per campaign, and subscribe to the `messages` webhook field if you use your own Meta app. Zernio webhook registration is automatic.
-- Tracked links. Swap a link for a tracked redirect and see clicks and CTR per campaign.
-- Two link buttons. Send up to two tappable link buttons in one DM, each a separate tracked link with its own click stats.
-- Follow gate. Optionally require a follow before you hand over the link. The DM asks the commenter to follow and tap a button; on tap, OpenReply checks Meta's `is_user_follow_business` flag and only sends the link once they follow, re-prompting until then. It fails open (sends the link anyway) when Instagram does not return follow status, so a real follower is never trapped.
-- Personalization. Use `{username}` in your message to greet the commenter by name.
-- Per-account rate limiting. Stays under Meta's documented cap of 750 private replies per hour, and queues the overflow instead of dropping it.
-- Multiple Instagram accounts. Connect several professional accounts under one workspace, each with its own limits.
-- Workspaces and roles. Owner, admin, and member roles with invite links, useful if you run this for clients.
-- Campaign templates. Start from a preset instead of a blank form.
-- English, Traditional Chinese and Brazilian Portuguese interface, with a saved language preference. See [interface languages](docs/localization.md).
-- Inbox. Read your Instagram DM conversations and reply from the dashboard, inside Meta's 24-hour messaging window. Cached so it loads instantly on repeat visits.
-- DM logs. Every send, skip, and failure is logged with a reason.
-- Self-comment filtering. Your own comments never trigger a reply, since Meta rejects DMing yourself anyway.
-
-## How it works
-
-1. Someone comments on your Instagram post or reel, or DMs you, or replies to your Story.
-2. Your connection provider (direct Meta or Zernio) delivers the event to your OpenReply instance.
-3. OpenReply checks the text against your active campaigns.
-4. On a keyword match, it queues a job.
-5. A background worker sends the private reply, and the public reply if you enabled one.
-
-The web app receives the webhook and serves the dashboard. A separate worker process does the sending, because the send has to survive rate limits and retries. Both talk to the same Postgres and Redis.
-
-## Quick start
-
-1. **Choose your Instagram connection.** [Zernio](docs/zernio.md) is recommended if you want to avoid setting up your own Meta app. It is a paid service and sponsor, not a hosted OpenReply plan. Or follow the existing [direct Meta setup](docs/setup.md#the-meta-app).
-2. **Deploy the app and worker.** Both paths need PostgreSQL, Redis, a public HTTPS URL, and email delivery for magic-link sign-in.
-3. **Connect an Instagram Business or Creator account** in Settings, create a campaign, and test a keyword comment from another account.
-
-Read [docs/setup.md](docs/setup.md) for the complete walkthrough, including a provider-aware AI assistant prompt. Existing accounts are never automatically migrated. Check [Zernio’s feature limits](docs/zernio.md#feature-availability) before choosing.
-
-**Moving from ManyChat or another DM tool?** Disconnect it from the Instagram account and give OpenReply control of conversations in Meta Business Suite, or button taps in DMs will fail with "not the thread owner". See [Migrating from ManyChat](docs/setup.md#migrating-from-manychat-or-another-dm-tool-give-openreply-control-of-conversations).
-
-### Deploy the web app
-
-The button creates your web deployment. You still need to configure the database, Redis, email delivery, and a separate always-on worker.
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/diwenne/openreply)
-
-### Run it locally
-
-```bash
-git clone https://github.com/diwenne/openreply.git
-cd openreply
-npm install
-cp .env.example .env      # then fill in the values, see docs/setup.md
-docker-compose up -d      # starts Postgres and Redis
+```powershell
+npm ci
+Copy-Item .env.example .env
+# .env 값을 채웁니다. 아래 한국어 설치 안내를 참고하세요.
+docker compose up -d
 npm run db:generate
 npm run db:migrate
-npm run dev               # web app on http://localhost:3000
-npm run worker            # in a second terminal, this sends the DMs
+npm run dev
 ```
 
-Two processes, always. `npm run dev` serves the app and receives webhooks. `npm run worker` is what actually sends the messages. If comments come in and no DM ever arrives, the worker is the first thing to check.
+다른 터미널에서 발송 워커를 실행합니다.
 
-Full environment variables and the production layout are in [docs/setup.md](docs/setup.md).
+```powershell
+npm run worker
+```
 
-## Set it up with your AI assistant
+- 첫 화면: <http://localhost:3000>
+- 체험: <http://localhost:3000/playground>
+- 실제 계정 연결: <http://localhost:3000/login>
 
-If you use Claude Code, Cursor, or a similar tool, an assistant can walk you through either connection path. There is a ready-made prompt in the [Set it up with an AI assistant](docs/setup.md#set-it-up-with-an-ai-assistant) section of the setup guide. Paste it into your assistant inside a clone of this repo, choose your provider before configuring any Meta secrets, and it will walk you through connecting Instagram and going live.
+**[한국어 설치 안내](docs/setup-ko.md)** · [원본 설치 안내](docs/setup.md) · [원본 README](README.upstream.md)
 
-## Tech stack
+체험 화면에는 실제 Instagram 연결이 필요하지 않습니다. 실제 발송에는 Meta 앱 설정, Instagram 프로페셔널 계정, 로그인 이메일 발송 설정, 공개 HTTPS 주소와 실행 중인 DB·Redis·워커가 필요합니다. 개발·표준 접근 권한으로 모든 일반 사용자의 댓글과 DM이 동작한다고 가정하지 말고, 실제 사용할 계정과 권한 범위를 Meta 앱 대시보드에서 확인하세요.
 
-- Next.js 16 and React 19 for the web app and API routes
-- Prisma 7 with PostgreSQL
-- BullMQ on Redis for the send queue and the worker
-- Auth.js (NextAuth) with email magic links through Resend
-- Tailwind CSS for the interface
-- The official Instagram API with Instagram Login
+소프트웨어 자체의 월 발송 건수 제한은 없습니다. Meta 권한, 발송 정책과 속도 제한은 적용됩니다. 호스팅과 선택한 외부 서비스 비용은 별도입니다. 유료 연결 서비스 Zernio는 선택 사항이며, 내 Meta 앱으로 직접 연결할 수 있습니다.
 
-For the complete stack — application libraries, the two runtime processes, and the free services this runs on (Vercel, Neon, Redis Cloud, an Oracle Cloud always-free VM for the worker, Resend, Meta) — see [docs/stack.md](docs/stack.md).
+## 검증
 
-## Contributing
+```powershell
+npm run db:generate
+npm run typecheck
+npm run lint
+npm test
+npm run build
+```
 
-Issues and pull requests are welcome. If you hit a Meta quirk that is not in the setup guide, a PR that documents it is worth as much as a code fix, because that is where everyone loses time.
+실제 PostgreSQL을 쓰는 테스트는 `TEST_DATABASE_URL`을 지정해야 실행됩니다. 체험 화면과 단위 테스트 통과는 실제 Instagram 발송 성공을 뜻하지 않습니다.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
+## 원본과 라이선스
 
-## Credits
+원본: [diwenne/openreply](https://github.com/diwenne/openreply)
 
-Built and maintained by Diwen Huang.
+한국어판: [cozykbin/openreply](https://github.com/cozykbin/openreply)
 
-- GitHub: [@diwenne](https://github.com/diwenne)
-- Website: [diwenhuang.ca](https://diwenhuang.ca)
-- X: [@diwenne](https://x.com/diwennee)
-- Instagram: [@devdiwen](https://instagram.com/devdiwen)
-
-OpenReply was initially forked from [instagram-comment-to-dm](https://github.com/im-anishraj/instagram-comment-to-dm) by [Anish Raj](https://github.com/im-anishraj), also MIT licensed, and has been substantially built upon since.
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=diwenne%2Fopenreply&type=date&legend=top-left">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=diwenne/openreply&type=date&theme=dark&legend=top-left" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=diwenne/openreply&type=date&legend=top-left" />
-    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=diwenne/openreply&type=date&legend=top-left" />
-  </picture>
-</a>
-
-## Star the repo
-
-If OpenReply is useful to you, star it. It is the simplest way to help the project reach the next person looking for a free way to do this.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+원본 작성자 Anish Raj, Diwen Huang의 저작권과 MIT 라이선스를 유지합니다. [LICENSE](LICENSE)를 확인하세요. 원본의 영문 공개 페이지·법률 안내와 인증 이메일은 이 버전에서도 일부 영어로 제공됩니다.

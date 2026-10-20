@@ -8,6 +8,9 @@ import {
 describe("campaign templates", () => {
   it("ships the public launch template set", () => {
     expect(getCampaignTemplateSlugs()).toEqual([
+      "ko-resource-link",
+      "ko-product-link",
+      "ko-event-signup",
       "dtc-product-link",
       "real-estate-lead-form",
       "fitness-plan",

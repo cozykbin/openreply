@@ -2,14 +2,17 @@ import { describe, expect, it } from "vitest";
 import { createI18n, resolveLocale } from "../lib/i18n";
 import ptBR from "../lib/i18n/pt-BR.json";
 import zhTW from "../lib/i18n/zh-TW.json";
+import ko from "../lib/i18n/ko.json";
 
 describe("interface translations", () => {
-  it("keeps English as the default for absent or unsupported preferences", () => {
+  it("defaults to Korean for absent or unsupported preferences", () => {
     for (const value of [undefined, null, "", "fr", "zh-CN", "../zh-TW", "pt", "pt-PT"]) {
-      expect(resolveLocale(value)).toBe("en");
+      expect(resolveLocale(value)).toBe("ko");
     }
     expect(resolveLocale("zh-TW")).toBe("zh-TW");
     expect(resolveLocale("pt-BR")).toBe("pt-BR");
+    expect(resolveLocale("ko")).toBe("ko");
+    expect(resolveLocale("en")).toBe("en");
   });
 
   it("renders both interface languages from the same keys", () => {
@@ -51,7 +54,7 @@ describe("interface translations", () => {
   it("has complete, plain-text translations with matching interpolation fields", () => {
     const placeholders = (text: string) =>
       [...text.matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort();
-    for (const catalog of [zhTW, ptBR]) {
+    for (const catalog of [zhTW, ptBR, ko]) {
       for (const [source, translation] of Object.entries(catalog)) {
         expect(translation.trim(), source).not.toBe("");
         expect(placeholders(translation), source).toEqual(placeholders(source));
@@ -62,6 +65,17 @@ describe("interface translations", () => {
 
   it("keeps the Brazilian Portuguese catalog on exactly the same keys", () => {
     expect(Object.keys(ptBR).sort()).toEqual(Object.keys(zhTW).sort());
+    expect(Object.keys(ko).sort()).toEqual(Object.keys(zhTW).sort());
+  });
+
+  it("renders Korean labels and preserves user interpolation verbatim", () => {
+    const { t, label } = createI18n("ko");
+    expect(t("Settings")).toBe("설정");
+    expect(t("{count} campaigns", { count: 0 })).toBe("자동화 0개");
+    expect(t("Hello, {name}!", { name: "{count} <b>사용자</b>" })).toBe(
+      "{count} <b>사용자</b>님, 안녕하세요!",
+    );
+    expect(label("SENT")).toBe("발송 완료");
   });
 
   it("renders Brazilian Portuguese with interpolation and display labels", () => {

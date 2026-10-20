@@ -1,487 +1,77 @@
 import type { Metadata } from "next";
-import "./landing.css";
 import Link from "next/link";
-import Image from "next/image";
-import localFont from "next/font/local";
-import { DemoNotice } from "@/components/demo-notice";
-import { zernioLink } from "@/lib/zernio-links";
-
-const geist = localFont({
-  src: "../public/fonts/geist-latin.woff2",
-  display: "swap",
-  weight: "100 900",
-});
-const GITHUB_URL = "https://github.com/diwenne/openreply";
-const SETUP_DOCS_URL = `${GITHUB_URL}/blob/main/docs/setup.md`;
-const ZERNIO_DOCS_URL = `${GITHUB_URL}/blob/main/docs/zernio.md`;
-
-function formatStars(count: number): string {
-  if (count >= 1000) {
-    return `${(count / 1000).toFixed(1)}K`;
-  }
-  return count.toLocaleString();
-}
-
-const githubIconPath =
-  "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z";
-
-async function getGitHubStars(): Promise<number | null> {
-  try {
-    const res = await fetch("https://api.github.com/repos/diwenne/openreply", {
-      headers: { Accept: "application/vnd.github+json" },
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as { stargazers_count?: number };
-    return typeof data.stargazers_count === "number"
-      ? data.stargazers_count
-      : null;
-  } catch {
-    return null;
-  }
-}
+import { PRODUCT_NAME, REPOSITORY_URL, SETUP_GUIDE_URL, UPSTREAM_URL } from "@/lib/brand";
+import { CAMPAIGN_TEMPLATES } from "@/lib/templates/campaign-templates";
 
 export const metadata: Metadata = {
-  title: "OpenReply - Open source Instagram comment-to-DM automation",
-  description:
-    "A free, self-hosted ManyChat alternative. Turn Instagram keyword comments into automatic private replies. Connect through your own Meta app or optional paid provider Zernio.",
+  title: `${PRODUCT_NAME} - 댓글을 대화로`,
+  description: "댓글에 키워드를 남기면 링크를 DM으로 보내세요. 한국어 화면과 템플릿으로 직접 운영하는 Instagram 자동화.",
 };
 
-function SponsorCredit({ placement }: { placement: string }) {
-  return (
-    <a
-      className="or-sponsor-credit"
-      href={zernioLink({ placement })}
-      target="_blank"
-      rel="sponsored noopener noreferrer"
-    >
-      <span>Supported by</span>
-      <Image
-        src="/brand/zernio-primary.svg"
-        alt="Zernio"
-        width={76}
-        height={24}
-      />
-      <span className="or-sponsor-disclosure">Optional paid provider</span>
-    </a>
-  );
-}
-
-function ReplyPreview() {
-  return (
-    <figure
-      className="or-preview"
-      aria-label="Example campaign: a GUIDE comment triggers a private reply with a guide link"
-    >
-      <div className="or-preview-top">
-        <span className="or-wordmark">
-          OpenReply<span aria-hidden="true">↗</span>
-        </span>
-        <span className="or-mono">Campaign preview</span>
-      </div>
-      <div className="or-preview-body">
-        <div className="or-preview-heading">
-          <span className="or-avatar">S</span>
-          <div>
-            <strong>Sunday studio</strong>
-            <span>@sunday.studio · Instagram</span>
-          </div>
-          <span className="or-active">Active</span>
-        </div>
-        <div className="or-post">
-          <span className="or-mono">Campaign: New drop</span>
-          <p>
-            Comment GUIDE below
-            <br />and I’ll send you the link.
-          </p>
-          <span>Keyword: GUIDE</span>
-          <div className="or-post-lines" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-            <i />
-            <i />
-          </div>
-        </div>
-        <div className="or-comment">
-          <span className="or-avatar or-avatar-small">M</span>
-          <div>
-            <strong>maya.creates</strong>
-            <p>GUIDE! need this 😍</p>
-          </div>
-        </div>
-        <div className="or-match">
-          <span aria-hidden="true">↓</span>
-          <span>
-            Keyword <code>GUIDE</code> matched
-          </span>
-          <span className="or-match-line" />
-          <span>Private reply</span>
-        </div>
-        <div className="or-message">
-          <span className="or-mono">Sunday studio → Maya</span>
-          <p>Hey Maya! Here’s the link 👇</p>
-          <span className="or-message-link">
-            Shop the new drop <span aria-hidden="true">↗</span>
-          </span>
-        </div>
-        <div className="or-delivered">
-          <span aria-hidden="true">✓</span> Sent through the official Instagram
-          API
-        </div>
-      </div>
-      <figcaption>
-        Example content. Your keywords, your message, your links.
-      </figcaption>
-    </figure>
-  );
-}
-
-const steps = [
-  [
-    "Connect your account",
-    "Choose Zernio or your own Meta app, then connect an Instagram Business or Creator account.",
-  ],
-  [
-    "Set up a campaign",
-    "Pick a post or reel, add keywords, and write the private reply. Add a public reply or tracked link buttons if you need them.",
-  ],
-  [
-    "OpenReply handles the rest",
-    "Incoming events trigger your campaigns. A background worker queues, rate-limits, and logs each send, with retries and comment reconciliation.",
-  ],
-];
 const features = [
-  [
-    "Custom reply messages",
-    "Write your own messages, personalize with a username, and use up to two tracked link buttons.",
-  ],
-  [
-    "Multiple triggers",
-    "Trigger campaigns from post comments, incoming DMs, and text replies to Stories.",
-  ],
-  [
-    "Inbox",
-    "Read conversations and reply from OpenReply, within Instagram’s messaging window.",
-  ],
-  [
-    "Delivery logs",
-    "See sent, skipped, and failed messages, with reasons. Follow tracked link clicks back to a campaign.",
-  ],
+  ["01", "키워드는 우리말로", "정보, 자료, 신청. 익숙한 키워드로 시작하고, 붙여 쓰는 댓글까지 받을지 직접 정하세요."],
+  ["02", "보낼 내용도 우리 방식으로", "자료 공유, 상품 안내, 행사 신청 템플릿을 골라 메시지와 링크를 바꾸면 됩니다."],
+  ["03", "발송 흐름은 한눈에", "원본 OpenReply의 대기열, 중복 방지, 재시도와 발송 기록으로 자동화를 운영하세요."],
 ];
 
-export default async function Home() {
-  const stars = await getGitHubStars();
+export default function HomePage() {
   return (
-    <div id="top" className={`or-landing ${geist.className}`}>
-      <a className="or-skip" href="#main">
-        Skip to content
-      </a>
-      <DemoNotice variant="banner" />
-      <header className="or-header">
-        <div className="or-container or-nav">
-          <a className="or-wordmark" href="#top" aria-label="OpenReply home">
-            OpenReply
-          </a>
-          <nav aria-label="Main navigation">
-            <a href="#how">How it works</a>
-            <a href="#setup">Self-host it</a>
-            <a
-              className="or-stars"
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="View OpenReply on GitHub"
-            >
-              <svg viewBox="0 0 16 16" aria-hidden="true">
-                <path d={githubIconPath} />
-              </svg>
-              {stars !== null && <span>{formatStars(stars)}</span>}
-            </a>
-          </nav>
-          <div className="or-nav-cta">
-            <a className="or-nav-signin" href="/login">
-              Sign in
-            </a>
-            <a className="or-button or-button-small" href="/login">
-              Get started <span aria-hidden="true">↗</span>
-            </a>
+    <div className="min-h-screen bg-white">
+      <header className="border-b border-border">
+        <nav aria-label="메인 메뉴" className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
+          <Link href="/" className="text-base font-semibold tracking-tight">{PRODUCT_NAME}</Link>
+          <div className="flex items-center gap-5 text-sm">
+            <a href={REPOSITORY_URL} className="text-muted hover:text-foreground">GitHub ↗</a>
+            <Link href="/login" className="rounded-lg border border-border px-4 py-2 font-medium">로그인</Link>
           </div>
-        </div>
+        </nav>
       </header>
-      <main id="main">
-        <section className="or-container or-hero">
-          <div className="or-hero-copy">
-            <h1>
-              Turn Instagram comments
-              <br />
-              into private replies.
-            </h1>
-            <p className="or-lead">
-              Someone comments a keyword on your post or reel, OpenReply sends
-              them a DM automatically. Free, open source, self-hosted.
-            </p>
-            <div className="or-actions">
-              <a className="or-button or-button-primary" href={SETUP_DOCS_URL}>
-                Set up OpenReply <span aria-hidden="true">↗</span>
-              </a>
-              <a className="or-text-link" href="#how">
-                See how it works <span aria-hidden="true">↓</span>
-              </a>
+      <main>
+        <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[1.1fr_1fr]">
+          <div>
+            <p className="text-sm font-semibold text-accent">직접 운영하는 Instagram 댓글 자동 DM</p>
+            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">댓글을 남기면,<br />링크가 DM으로.</h1>
+            <p className="mt-6 max-w-lg text-base leading-8 text-muted">반복해서 보내던 링크, 이제 자동으로 보내세요. 한국어 화면에서 키워드와 메시지를 정하고 내 서버에서 운영하는 OpenReply입니다.</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/playground" className="rounded-xl bg-accent px-6 py-3.5 text-sm font-semibold text-white hover:bg-accent-hover">로그인 없이 체험하기 →</Link>
+              <a href={SETUP_GUIDE_URL} className="rounded-xl border border-border px-6 py-3.5 text-sm font-semibold">한국어 설치 안내 ↗</a>
             </div>
-            <p className="or-hero-note">
-              Free software. Self-hosted. Your infrastructure.
-            </p>
-            <SponsorCredit placement="landing-hero" />
+            <p className="mt-5 text-xs leading-6 text-muted">소프트웨어 무료 · 직접 호스팅 · Meta 발송 정책 적용</p>
           </div>
-          <ReplyPreview />
+          <figure className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
+            <figcaption className="flex items-center justify-between border-b border-border pb-5 text-sm"><span className="font-semibold">자료 링크 보내기</span><span className="text-xs text-muted">작동 예시</span></figcaption>
+            <div className="mt-6 rounded-xl border border-border bg-white p-5"><p className="text-xs text-muted">게시물 안내</p><p className="mt-2 text-xl font-semibold leading-8">댓글에 ‘정보’를 남기면<br />자료 링크를 보내드려요.</p></div>
+            <div className="mt-5 flex gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border text-xs">하늘</span><div><p className="text-xs font-semibold">@haneul</p><p className="mt-1 text-sm">정보 주세요!</p></div></div>
+            <p className="my-5 text-center text-xs font-semibold text-accent">↓ ‘정보’ 키워드 일치</p>
+            <div className="rounded-xl border border-orange-200 bg-orange-50 p-5"><p className="text-xs text-muted">DM 내용</p><p className="mt-2 text-sm leading-7">하늘님, 요청하신 자료 보내드려요!</p><p className="mt-2 text-sm font-medium text-orange-700">https://example.com/guide</p></div>
+          </figure>
         </section>
-        <div className="or-container or-principles">
-          <span>MIT licensed</span>
-          <span>Official Instagram API</span>
-          <span>No password sharing</span>
-          <span>Your campaigns, in your database</span>
-        </div>
-        <div className="or-container">
-          <div className="or-sheet">
-            <section id="how" className="or-section or-how">
-              <div>
-                <h2>How it works</h2>
-                <p>
-                  Send a product link, share a resource, or deliver your latest
-                  guide. You decide what starts the conversation and what
-                  happens next.
-                </p>
-              </div>
-              <ol className="or-steps">
-                {steps.map(([title, description], index) => (
-                  <li key={title}>
-                    <span className="or-step-number">0{index + 1}</span>
-                    <div>
-                      <h3>{title}</h3>
-                      <p>{description}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </section>
-            <section id="features" className="or-section">
-              <div className="or-section-intro">
-                <h2>Features</h2>
-              </div>
-              <div className="or-feature-grid">
-                {features.map(([title, description]) => (
-                  <article key={title}>
-                    <h3>{title}</h3>
-                    <p>{description}</p>
-                  </article>
-                ))}
-              </div>
-            </section>
-            <section className="or-technical">
-              <div>
-                <h2>
-                  Open code.
-                  <br />A system you can inspect.
-                </h2>
-                <p>
-                  OpenReply owns the campaigns, keyword matching, queues,
-                  retries, logs, and inbox. Your connection provider handles the
-                  Instagram API.
-                </p>
-                <a href={GITHUB_URL} className="or-text-link">
-                  Explore the source <span aria-hidden="true">↗</span>
-                </a>
-              </div>
-              <div className="or-runtime">
-                <div>
-                  <span className="or-mono">Web app</span>
-                  <strong>Next.js + React</strong>
-                  <span>Dashboard & incoming events</span>
-                </div>
-                <div>
-                  <span className="or-mono">Background worker</span>
-                  <strong>Node.js + BullMQ</strong>
-                  <span>Queued delivery & reconciliation</span>
-                </div>
-                <div>
-                  <span className="or-mono">Your data</span>
-                  <strong>PostgreSQL + Redis</strong>
-                  <span>Campaigns, accounts, logs & queue</span>
-                </div>
-              </div>
-            </section>
-            <section id="setup" className="or-section">
-              <div className="or-section-intro">
-                <h2>Self-host OpenReply. Choose your connection.</h2>
-                <p>
-                  Both options need your own web app, background worker,
-                  PostgreSQL, and Redis. OpenReply is free software; hosting and
-                  provider costs are separate.
-                </p>
-              </div>
-              <div className="or-provider-grid">
-                <article className="or-provider-zernio">
-                  <div className="or-provider-title">
-                    <h3>Connect with Zernio</h3>
-                    <span>Recommended for simpler setup</span>
-                  </div>
-                  <p>
-                    Use Zernio’s managed Instagram connection instead of
-                    creating and reviewing your own Meta app. Save an API key in
-                    Settings, choose a profile, and connect your account.
-                  </p>
-                  <ul>
-                    <li>No Meta app secrets to configure in OpenReply</li>
-                    <li>OpenReply registers the webhook for you</li>
-                    <li>Optional paid service and project sponsor</li>
-                  </ul>
-                  <a
-                    className="or-text-link"
-                    href={zernioLink({ placement: "landing-setup" })}
-                    rel="sponsored noopener noreferrer"
-                    target="_blank"
-                  >
-                    Explore Zernio <span aria-hidden="true">↗</span>
-                  </a>
-                  <a className="or-provider-guide" href={ZERNIO_DOCS_URL}>
-                    Read setup & feature limits
-                  </a>
-                </article>
-                <article>
-                  <div className="or-provider-title">
-                    <h3>Use your own Meta app</h3>
-                    <span>Direct connection</span>
-                  </div>
-                  <p>
-                    Keep the existing direct Meta integration. Create your app,
-                    configure Instagram Login and webhooks, and manage platform
-                    credentials yourself.
-                  </p>
-                  <ul>
-                    <li>Bring your own Meta app and secrets</li>
-                    <li>Handle App Review where required</li>
-                    <li>No Zernio account or subscription needed</li>
-                  </ul>
-                  <a
-                    className="or-text-link"
-                    href={`${SETUP_DOCS_URL}#the-meta-app`}
-                  >
-                    Follow the direct Meta guide{" "}
-                    <span aria-hidden="true">↗</span>
-                  </a>
-                </article>
-              </div>
-              <p className="or-setup-note">
-                Instagram’s account requirements, permissions, messaging
-                windows, and rate limits apply with either provider. Existing
-                accounts are never automatically migrated.
-              </p>
-            </section>
-            <section className="or-section or-faq">
-              <div>
-                <h2>FAQ</h2>
-              </div>
-              <div>
-                <details>
-                  <summary>Is OpenReply free?</summary>
-                  <p>
-                    Yes. OpenReply is MIT-licensed software with no software
-                    subscription or seat limits. You pay for your own
-                    infrastructure and any optional services you choose,
-                    including Zernio.
-                  </p>
-                </details>
-                <details>
-                  <summary>Can I use the public demo to send DMs?</summary>
-                  <p>
-                    No. Deploy your own instance first. The public demo shows
-                    the interface; it is not a hosted automation service. The{" "}
-                    <a href={SETUP_DOCS_URL}>setup guide</a> walks through both
-                    processes, the databases, and your provider choice.
-                  </p>
-                </details>
-                <details>
-                  <summary>Do I need Zernio?</summary>
-                  <p>
-                    No. Zernio is an optional paid connection provider and
-                    sponsor. It can spare you setting up your own Meta app,
-                    while OpenReply still runs on your infrastructure. The
-                    direct Meta path stays available.{" "}
-                    <a
-                      href={zernioLink({ placement: "landing-faq" })}
-                      rel="sponsored noopener noreferrer"
-                      target="_blank"
-                    >
-                      Learn about Zernio
-                    </a>
-                    .
-                  </p>
-                </details>
-                <details>
-                  <summary>Which Instagram accounts can I connect?</summary>
-                  <p>
-                    Instagram Business and Creator accounts. Personal accounts
-                    are not supported. Connections use the official API, and
-                    Instagram’s platform policies still apply.
-                  </p>
-                </details>
-                <details>
-                  <summary>Are there differences between providers?</summary>
-                  <p>
-                    Yes. With Zernio, the post picker shows the latest 25 posts.
-                    Reporting needs its analytics add-on and synced data, and
-                    follower snapshots can be up to 24 hours old. Inbox previews
-                    are omitted when message direction is unavailable; opening
-                    threads and replying are supported. Read the{" "}
-                    <a href={ZERNIO_DOCS_URL}>provider guide</a> before
-                    choosing.
-                  </p>
-                </details>
-              </div>
-            </section>
+        <section className="border-y border-border bg-surface">
+          <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:px-8 md:grid-cols-3">
+            {features.map(([number, title, description]) => <article key={number}><p className="text-xs font-semibold text-accent">{number}</p><h2 className="mt-3 text-lg font-semibold">{title}</h2><p className="mt-3 text-sm leading-7 text-muted">{description}</p></article>)}
           </div>
-        </div>
-        <section className="or-container or-closing">
-          <h2>
-            Set up your first campaign
-          </h2>
-          <p>Clone it, connect Instagram, and write your first reply.</p>
-          <div className="or-actions">
-            <a className="or-button or-button-primary" href={SETUP_DOCS_URL}>
-              Set up OpenReply <span aria-hidden="true">↗</span>
-            </a>
-            <a className="or-text-link" href={GITHUB_URL}>
-              Star on GitHub <span aria-hidden="true">↗</span>
-            </a>
+        </section>
+        <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8">
+          <h2 className="text-2xl font-semibold">어떤 링크를 보내고 싶으세요?</h2>
+          <p className="mt-3 text-sm text-muted">한국어 템플릿으로 시작해 내 메시지로 바꿔 보세요.</p>
+          <div className="mt-7 grid gap-4 md:grid-cols-3">
+            {CAMPAIGN_TEMPLATES.filter((template) => template.slug.startsWith("ko-")).map((template) => (
+              <Link key={template.slug} href={`/login?template=${template.slug}`} className="rounded-xl border border-border p-6 hover:border-accent">
+                <p className="text-xs text-muted">{template.category}</p><h3 className="mt-2 font-semibold">{template.title} ↗</h3><p className="mt-3 text-sm leading-7 text-muted">{template.summary}</p><p className="mt-4 text-xs font-medium text-accent">{template.keywords.join(" · ")}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+        <section className="mx-auto max-w-6xl px-5 pb-16 sm:px-8">
+          <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
+            <h2 className="text-xl font-semibold">실제 발송을 시작하려면</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-8 text-muted">Instagram 비즈니스·크리에이터 계정과 Meta 개발자 앱, 공개 HTTPS 주소, DB와 발송 워커가 필요합니다. 소프트웨어의 월 요금제 제한은 없으며, 호스팅 비용과 Meta 권한·발송 제한은 별도입니다. 체험 화면은 계정 연결 없이 확인할 수 있습니다.</p>
+            <a href={SETUP_GUIDE_URL} className="mt-5 inline-block text-sm font-semibold text-accent">준비 항목과 설치 순서 확인 →</a>
           </div>
         </section>
       </main>
-      <footer className="or-footer">
-        <div className="or-container">
-          <div className="or-footer-top">
-            <div>
-              <Link href="/" className="or-wordmark">
-                OpenReply<span aria-hidden="true">↗</span>
-              </Link>
-              <p>Open source Instagram comment-to-DM automation.</p>
-            </div>
-            <nav aria-label="Footer navigation">
-              <a href={GITHUB_URL}>GitHub</a>
-              <a href={SETUP_DOCS_URL}>Setup guide</a>
-              <Link href="/privacy">Privacy</Link>
-              <Link href="/terms">Terms</Link>
-              <Link href="/data-deletion">Data deletion</Link>
-            </nav>
-          </div>
-          <div className="or-footer-bottom">
-            <span>
-              MIT licensed · Built by{" "}
-              <a href="https://diwenhuang.ca">Diwen Huang</a>
-            </span>
-            <SponsorCredit placement="landing-footer" />
-          </div>
-        </div>
+      <footer className="border-t border-border px-5 py-7 text-center text-xs leading-7 text-muted">
+        {PRODUCT_NAME} · <a href={REPOSITORY_URL} className="underline">우리 저장소</a> · <a href={UPSTREAM_URL} className="underline">원본 OpenReply</a> · MIT License
       </footer>
     </div>
   );

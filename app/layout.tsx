@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import { PRODUCT_NAME } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "OpenReply - Open source Instagram comment-to-DM automation",
+  title: `${PRODUCT_NAME} - Instagram 댓글 자동 DM`,
   description:
-    "A free, self-hosted ManyChat alternative. Send an Instagram DM automatically when someone comments a keyword on your post or reel, using the official Meta API.",
+    "댓글에 키워드를 남기면 링크를 DM으로 보내는 오픈소스 도구입니다. 한국어 화면과 템플릿으로 직접 운영하세요.",
   keywords: [
     "instagram automation",
     "comment to DM",
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "OpenReply",
+    title: PRODUCT_NAME,
     statusBarStyle: "black-translucent",
   },
   icons: {
@@ -43,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full dark">
+    <html lang="ko" className="h-full">
       <body
         className="min-h-full bg-background text-foreground font-sans antialiased"
         // Clears the home indicator when installed; 0 everywhere else.

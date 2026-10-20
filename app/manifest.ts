@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { PRODUCT_NAME } from "@/lib/brand";
 
 // Lets a self-hosted instance be installed to the home screen: on iOS via
 // Share -> "Add to Home Screen", on Android through the install prompt. It then
@@ -6,9 +7,10 @@ import type { MetadataRoute } from "next";
 // a phone practical.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "OpenReply",
+    name: PRODUCT_NAME,
     short_name: "OpenReply",
-    description: "Instagram comment-to-DM automation",
+    description: "Instagram 댓글 키워드 자동 DM",
+    lang: "ko",
     start_url: "/overview",
     display: "standalone",
     orientation: "portrait",

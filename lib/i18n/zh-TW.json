@@ -446,5 +446,9 @@
   "{name} Campaign Report": "{name} 活動報表",
   "{type} post": "{type} 貼文",
   "”": "」",
-  "← Campaigns": "← 返回活動列表"
+  "← Campaigns": "← 返回活動列表",
+  "Match method": "比對方式",
+  "Whole words only": "完整詞語",
+  "Contains keyword": "包含關鍵字",
+  "Partial matches can include unrelated words.": "部分比對也可能符合無關詞語。"
 }

@@ -12,6 +12,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { zernioLink } from "@/lib/zernio-links";
 import { usePathname } from "next/navigation";
+import { PRODUCT_NAME } from "@/lib/brand";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard" },
@@ -62,7 +63,7 @@ export default function Sidebar({
           style={{ paddingTop: "calc(1.25rem + env(safe-area-inset-top))" }}
         >
           <Link href="/dashboard" className="text-base font-semibold">
-            OpenReply
+            {PRODUCT_NAME}
           </Link>
         </div>
 
